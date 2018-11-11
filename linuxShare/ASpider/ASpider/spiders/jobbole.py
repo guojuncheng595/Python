@@ -1,29 +1,122 @@
 # -*- coding: utf-8 -*-
 import scrapy
+# import sys
 import re
+from urllib import parse
+
+from scrapy.http import Request
+
 
 class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
     allowed_domains = ['blog.jobbole.com']
-    start_urls = ['http://blog.jobbole.com/114442/']
+    # start_urls = ['http://blog.jobbole.com/']
+    start_urls = ['http://blog.jobbole.com/all-posts/']
 
     def parse(self, response):
-        # /html/body/div[3]/div[3]/div[1]/div[1]/h1
-        # /html/body/div[1]/div[3] div[1]/div[1]/h1
-        # re_selector = response.xpath("/html/body/div[1]/div[3] div[1]/div[1]/h1")
-        # // *[ @ id = "post-114440"] / div[1] / h1
-        # re2_selector = response.xpath('//*[@id="post-114440"]/div[1]/h1/text()')
 
-        title = response.xpath('//*[@id="post-114440"]/div[1]/h1/text()').extract()[0]
+        # 1.获取文章列表中的文章url，并交给scrapy下载后并进行解析
+        # 2.获取下一页的url并交给scrapy进行下载，下载完成后交给parse
 
-        create_date = response.xpath('//*[@id="post-114440"]/div[2]/p/text()').extract()[0].strip().replace(".","").strip()
+        # 解析列表页中的所有文章url，并交给scrapy下载后并进行解析\
+        post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
 
-        fav_nums = response.xpath("//span[contains(@class,'bookmark-btn')]/text()").extract()[0]
-        match_re = re.match(".*(\d+).*",fav_nums)
+        for post_url in post_urls:
+            yield Request(url=parse.urljoin(response.url,post_url),callback=self.parse_detail)
+            print(post_url)
+
+
+        ##提取下一页，并交给scripy下载
+        next_url = response.css(".next.page-numbers::attr(href)").extract_first("")
+        if next_url:
+            yield Request(url=parse.urljoin(response.url, next_url), callback=self.parse)
+
+
+
+
+
+    # def parse_detail(self,response):
+    # #提取文章的具体字段
+    #     #################################################################################3333
+    #     # post_urls = response.css(".floated-thumb .post-thumb a::attr(href)").extract()
+    #     post_urls = response.css("#archive .floated-thumb .post-thumb a::attr(href)").extract()
+    #     for post_url in post_urls:
+    #         # response.url + post_url
+    #         yield Request(url=parse.urljoin(response.url,post_url),callback=self.parse_detail)
+    #         print(post_url)
+    #     # 提取下一页并交给scrapy进行下载
+    #     next_url = response.css(".next.page-numbers::attr(href)").extract_first("")
+    #     if next_url:
+    #         yield Request(url=parse.urljoin(response.url,next_url),callback=self.parse)
+
+
+
+    def parse_detail(self,response):
+        # //提取文章的具体字段
+        #数组为空的时候返回nuLl
+        # praise_nums = int(response.xpath("//span[contains(@class,'vote-post-up')]/h10/text()").extract_first(""))
+        #
+        # # //*[@id="post-114455"]/div[1]/h1   //获取h1标签的值
+        # re_selector1 = response.xpath('//*[@id="post-114455"]/div[1]/h1')
+        # # 获取text值
+        # re_selector2 = response.xpath('//*[@id="post-114455"]/div[1]/h1/text()')
+        # re_selector3 = response.xpath('//div[@class="entry-header"]/h1/text()')
+        #
+        # create_date = response.xpath("//p[@class='entry-meta-hide-on-mobile']/text()").extract()[0].strip().replace("·", "").strip()
+        #
+        # praise_nums = int(response.xpath("//span[contains(@class,'vote-post-up')]/h10/text()").extract()[0])
+        #
+        # fav_nums = response.xpath("//span[contains(@class,'bookmark-btn')]/text()").extract()[0]
+        # match_re = re.match(".*?(\d+).*",fav_nums)
+        # if match_re:
+        #     fav_nums = int(match_re.group(1))
+        # else:
+        #     fav_nums = 0
+        #
+        # # response.xpath("//a[@href='#article-comment']/span").extract()[0]
+        # comment_nums = response.xpath("//a[@href='#article-comment']/span/text()").extract()[0]
+        # match_re = re.match(".*?(\d+).*",comment_nums)
+        # if match_re:
+        #     comment_nums = int(match_re.group(1))
+        # else:
+        #     comment_nums = 0
+        #
+        # content = response.xpath("//div[@class='entry']").extract()[0]
+        #
+        # create_date = response.xpath("//p[@class='entry-meta-hide-on-mobile']/a/text()").extract()
+        #
+        # tag_list = response.xpath("//p[@class='entry-meta-hide-on-mobile']/a/text()").extract()
+        #
+        # tag_list =  [element for element in tag_list if not element.strip().endswith("评论")]
+        #
+        # tags = ",".join(tag_list)
+
+
+        ##通过css选择器提取字段
+        title = response.css(".entry-header h1::text").extract()
+        create_date =  response.css("p.entry-meta-hide-on-mobile::text").extract()[0].strip().replace("·", "").strip()
+        praise_nums = response.css(".vote-post-up h10::text").extract()[0]
+        fav_nums = response.css(".bookmark-btn::text").extract()[0]
+        match_re = re.match(".*?(\d+).*", fav_nums)
         if match_re:
-            fav_nums = match_re.group(1)
+            fav_nums = int(match_re.group(1))
+        else:
+            fav_nums = 0
 
-            tag_list = response.xpath("//p[@class='entry-meta-hide-on-mobile']/a/text()").extract()
+        comment_nums = response.css("a[href='#article-comment'] span::text").extract()[0]
+        match_re = re.match(".*?(\d+).*", comment_nums)
+        if match_re:
+            comment_nums = int(match_re.group(1))
+        else:
+            comment_nums = 0
+
+        content = response.css("div.entry").extract()[0]
+
+        tags = response.css("p.entry-meta-hide-on-mobile a::text").extract()
+        tag_list = [element for element in tags if not element.strip().endswith("评论")]
+
+        tags = ",".join(tag_list)
+
 
 
         pass
