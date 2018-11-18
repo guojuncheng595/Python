@@ -112,4 +112,4 @@ IMAGES_STORE = os.path.join(project_dir,'images')
 MYSQL_HOST = "47.104.176.41"
 MYSQL_DBNAME = "article_spider"
 MYSQL_USER = "root"
-MYSQL_PASSWD = "@Gjc040050"
+MYSQL_PASSWD = "root"
