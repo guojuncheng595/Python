@@ -66,9 +66,19 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   'ASpider.pipelines.AspiderPipeline': 300,
+   # 'ASpider.pipelines.AspiderPipeline': 300,
+
+   # 'ASpider.pipelines.JsonWithEncodingPipeline': 2,
+   # 'ASpider.pipelines.JsonExporterPipleline': 2,
+
+
     # 'scrapy.pipelines.images.ImagesPipeline': 1,
-   'ASpider.pipelines.ArticleImagePipeline': 1,
+   # 'ASpider.pipelines.ArticleImagePipeline': 1,
+
+   # 'ASpider.pipelines.MysqlPipeline': 1
+
+   'ASpider.pipelines.MysqlTwistedPipline': 1
+
 }
 IMAGES_URLS_FIELD = "front_image_url"
 project_dir = os.path.abspath(os.path.dirname(__file__)) #当前文件所在目录
@@ -98,3 +108,8 @@ IMAGES_STORE = os.path.join(project_dir,'images')
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
+
+MYSQL_HOST = "47.104.176.41"
+MYSQL_DBNAME = "article_spider"
+MYSQL_USER = "root"
+MYSQL_PASSWD = "@Gjc040050"

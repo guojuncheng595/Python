@@ -2,6 +2,7 @@
 import scrapy
 # import sys
 import re
+import datetime
 from urllib import parse
 
 from scrapy.http import Request
@@ -12,7 +13,7 @@ from ASpider.utils.common import get_md5
 class JobboleSpider(scrapy.Spider):
     name = 'jobbole'
     allowed_domains = ['blog.jobbole.com']
-    # start_urls = ['http://blog.jobbole.com/']
+    # start_urls = ['http://blog.jobbole.com/114505/']
     start_urls = ['http://blog.jobbole.com/all-posts/']
 
     def parse(self, response):
@@ -133,6 +134,10 @@ class JobboleSpider(scrapy.Spider):
         articleItem["url_object_id"] = get_md5(response.url)
         articleItem["title"] = title
         articleItem["url"] = response.url
+        try:
+            create_date = datetime.datetime.struct_time(create_date,"%Y/%m/%d").date()
+        except Exception as e:
+            create_date = datetime.datetime.now()
         articleItem["create_date"] = create_date
         articleItem["front_image_url"] = [front_image_url]
         articleItem["praise_nums"] = praise_nums
