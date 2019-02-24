@@ -14,6 +14,7 @@ class AspiderItem(scrapy.Item):
     pass
 
 class JobBoleArticleItem(scrapy.Item):
+    #该类似Java中的字典 ，只有一个类型Field
     title = scrapy.Field()
     create_date = scrapy.Field()
     url = scrapy.Field()

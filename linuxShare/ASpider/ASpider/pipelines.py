@@ -17,21 +17,25 @@ class AspiderPipeline(object):
     def process_item(self, item, spider):
         return item
 
+
 #
 class JsonWithEncodingPipeline(object):
-    #自定义json文件的导出
-    def __init__(self): #初始化打开json文件
-        self.file = codecs.open('article.json','w',encoding="utf-8")
-    def process_item(self,item,spider):#将文件存储在文件中
+    # 自定义json文件的导出
+    def __init__(self):  # 初始化打开json文件
+        self.file = codecs.open('article.json', 'w', encoding="utf-8")
 
-        lines = json.dumps(dict(item),ensure_ascii=False) + '\n' #将item转换成字符串
-        self.file.write(lines) #写入到文件当中
+    def process_item(self, item, spider):  # 将文件存储在文件中
+
+        lines = json.dumps(dict(item), ensure_ascii=False) + '\n'  # 将item转换成字符串
+        self.file.write(lines)  # 写入到文件当中
         return item
-    def spider_closed(self,spider):#关闭文件
+
+    def spider_closed(self, spider):  # 关闭文件
         self.file.close()
 
+
 class MysqlPipeline(object):
-    #采用同步的机制写入mysql
+    # 采用同步的机制写入mysql
     def __init__(self):
         self.conn = MySQLdb.connect('47.104.176.41', 'root', '@Gjc040050', 'article_spider', charset="utf8",
                                     use_unicode=True)
@@ -44,6 +48,7 @@ class MysqlPipeline(object):
         """
         self.cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
         self.conn.commit()
+
 
 class MysqlTwistedPipline(object):
     def __init__(self, dbpool):
@@ -73,9 +78,8 @@ class MysqlTwistedPipline(object):
         # 处理异步插入的异常
         print(failure)
 
-
-    def do_insert(self,cursor,item):
-        #执行具体的插入
+    def do_insert(self, cursor, item):
+        # 执行具体的插入
         insert_sql = """
             insert into article(title, url, create_date, fav_nums)
             VALUES (%s, %s, %s, %s)
@@ -83,20 +87,18 @@ class MysqlTwistedPipline(object):
         cursor.execute(insert_sql, (item["title"], item["url"], item["create_date"], item["fav_nums"]))
 
 
-
-
 class JsonExporterPipleline(object):
-    #调用scrapy提供的json exporter导出json文件
+    # 调用scrapy提供的json exporter导出json文件
     def __init__(self):
-        self.file = open('articleexport.json','wb')
-        self.exporter = JsonItemExporter(self.file,encoding="utf-8",ensure_ascii=False)
+        self.file = open('articleexport.json', 'wb')
+        self.exporter = JsonItemExporter(self.file, encoding="utf-8", ensure_ascii=False)
         self.exporter.start_exporting()
 
-    def close_spider(self,spider):
+    def close_spider(self, spider):
         self.exporter.finish_exporting()
         self.file.close()
 
-    def process_item(self,item,spider):
+    def process_item(self, item, spider):
         self.exporter.export_item(item)
         return item
 
