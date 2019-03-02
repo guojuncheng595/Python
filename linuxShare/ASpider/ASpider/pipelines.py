@@ -22,14 +22,17 @@ class AspiderPipeline(object):
 class JsonWithEncodingPipeline(object):
     # 自定义json文件的导出
     def __init__(self):  # 初始化打开json文件
+        #初始化的时候打开json文件，以wb的形式打开，
         self.file = codecs.open('article.json', 'w', encoding="utf-8")
 
+    # 读取文件
     def process_item(self, item, spider):  # 将文件存储在文件中
 
         lines = json.dumps(dict(item), ensure_ascii=False) + '\n'  # 将item转换成字符串
         self.file.write(lines)  # 写入到文件当中
         return item
 
+    # 关闭文件
     def spider_closed(self, spider):  # 关闭文件
         self.file.close()
 
@@ -52,6 +55,7 @@ class MysqlPipeline(object):
 
 class MysqlTwistedPipline(object):
     def __init__(self, dbpool):
+        #初始化的时候，保存在当前类中
         self.dbpool = dbpool
 
     @classmethod
@@ -90,6 +94,7 @@ class MysqlTwistedPipline(object):
 class JsonExporterPipleline(object):
     # 调用scrapy提供的json exporter导出json文件
     def __init__(self):
+        #初始化的时候打开json文件，以wb的形式打开，
         self.file = open('articleexport.json', 'wb')
         self.exporter = JsonItemExporter(self.file, encoding="utf-8", ensure_ascii=False)
         self.exporter.start_exporting()
@@ -105,8 +110,8 @@ class JsonExporterPipleline(object):
 
 class ArticleImagePipeline(ImagesPipeline):
     def item_completed(self, results, item, info):
-        for ok, value in results:
-            image_file_path = value["path"]
-        item["front_image_path"] = image_file_path
-
+        if "front_image_url" in item:
+            for ok, value in results:
+                image_file_path = value["path"]
+            item["front_image_path"] = image_file_path
         return item

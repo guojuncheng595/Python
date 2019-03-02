@@ -72,12 +72,12 @@ ITEM_PIPELINES = {
    # 'ASpider.pipelines.JsonExporterPipleline': 2,
 
 
-    # 'scrapy.pipelines.images.ImagesPipeline': 1,
+    # 'scrapy.pipelines.images.ImagesPipeline': 1, #下载图片pipelines(管道)配置
    # 'ASpider.pipelines.ArticleImagePipeline': 1,
 
    # 'ASpider.pipelines.MysqlPipeline': 1
 
-   'ASpider.pipelines.MysqlTwistedPipline': 1
+   'ASpider.pipelines.MysqlTwistedPipline': 1 #权重 ，越小也早进入
 
 }
 IMAGES_URLS_FIELD = "front_image_url"
