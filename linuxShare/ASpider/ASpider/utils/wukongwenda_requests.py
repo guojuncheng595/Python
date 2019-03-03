@@ -20,7 +20,6 @@ def get_ccid():
     return ""
 
 
-
 def wukongwenda_login(account,password):
     # 悟空问答 - 登陆
     if re.match("^1\d{10}",account):
