@@ -99,6 +99,7 @@ def ajaxRequest():
     url = "https://www.yunpanjingling.com/user/login"
     # session = requests.session()
 
+
     print(type(datas))
     print(type(json.dumps(datas)))
     requ = requests.post(url=url, data=json.dumps(datas), headers = headers)
