@@ -9,7 +9,7 @@ import json
 import bs4
 
 session = requests.session()
-session.cookies = cookielib.LWPCookieJar(filename='cookies')
+session.cookies = cookielib.LWPCookieJar(filename='cookies.txt')
 session.cookies.save(ignore_discard=True)
 try:
     session.cookies.load(ignore_discard=True)
@@ -63,19 +63,16 @@ header = {
     "Accept": "application/json, text/javascript, */*; q=0.01"
 }
 
-# def get_xsrf_token():
-#     response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
-#     token = ""
-#     if response.cookies:
-#         for key, value in response.cookies.items():
-#             if key == 'XSRF-TOKEN':
-#                 token += ("XSRF-TOKEN=" + value + ";")
-#             elif key == '_session':
-#                 token += ("_session=" + value + ";")
-#         print(token[:-1])
-#         return token[:-1]
-#     else:
-#         return "none"
+
+def is_login():
+    #通过个人中心页面返回状态码来判断是否为登陆状态
+    inbox_url = "https://www.yunpanjingling.com/user/dashboard"
+    response = session.get(inbox_url, allow_redirects=False)
+    if response.status_code != 200:
+        return False
+    else:
+        return True
+
 
 def get_csrf_token():
     # 获取csrf code   https://www.jianshu.com/p/887af1ab4200
@@ -117,12 +114,15 @@ def ajaxRequest():
     response.encoding = "utf-8"
     if response.status_code == 200:
         print("返回码：" + str(response.status_code))
+        print("返回码：" + str(response.text.encode("utf-8")))
     else:
-        test = str(response.content)
+        test = str(response.text.encode("utf-8"))
         print("返回码：" + test)
     session.cookies.save()
-    cookie = session.cookies
-    print(cookie)
+    # cookie = session.cookies
+    # print(cookie)
 
 
 ajaxRequest()
+
+is_login()
