@@ -116,9 +116,10 @@ def ajaxRequest():
     response = session.post(url=url, data=json.dumps(datas), headers=headers)
     response.encoding = "utf-8"
     if response.status_code == 200:
-        print("返回码：" + str(response.content))
+        print("返回码：" + str(response.status_code))
     else:
-        print("返回码：" + str(response.content))
+        test = str(response.content)
+        print("返回码：" + test)
     session.cookies.save()
     cookie = session.cookies
     print(cookie)
