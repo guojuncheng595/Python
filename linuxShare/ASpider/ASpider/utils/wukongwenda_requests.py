@@ -5,10 +5,8 @@ try:
 except:
     import http.cookiejar as cookielib
 
-import re
 import json
 import bs4
-from requests.cookies import RequestsCookieJar
 
 session = requests.session()
 session.cookies = cookielib.LWPCookieJar(filename='cookies')
@@ -18,14 +16,6 @@ try:
 except:
     print("Cookie 未能加载")
 
-#
-#
-
-#
-#
-
-#
-#
 # def get_csrf():
 #     # 获取csrf code   https://www.jianshu.com/p/887af1ab4200
 #     response = requests.get("https://www.yunpanjingling.com", headers=header)
@@ -66,10 +56,6 @@ except:
 #         print(response_text.text)
 #         # session.cookies.save()
 
-
-# wukongwenda_login("2670617835@qq.com", "g2670617835")
-# get_csrf()
-
 header = {
     "HOST":"www.yunpanjingling.com",
     "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36",
@@ -77,29 +63,27 @@ header = {
     "Accept": "application/json, text/javascript, */*; q=0.01"
 }
 
-def get_xsrf_token():
-    response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
-    token = ""
-    if response.cookies:
-        for key, value in response.cookies.items():
-            if key == 'XSRF-TOKEN':
-                token += ("XSRF-TOKEN=" + value + ";")
-            elif key == '_session':
-                token += ("_session=" + value + ";")
-        print(token[:-1])
-        return token[:-1]
-    else:
-        return "none"
+# def get_xsrf_token():
+#     response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
+#     token = ""
+#     if response.cookies:
+#         for key, value in response.cookies.items():
+#             if key == 'XSRF-TOKEN':
+#                 token += ("XSRF-TOKEN=" + value + ";")
+#             elif key == '_session':
+#                 token += ("_session=" + value + ";")
+#         print(token[:-1])
+#         return token[:-1]
+#     else:
+#         return "none"
 
 def get_csrf_token():
     # 获取csrf code   https://www.jianshu.com/p/887af1ab4200
     response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
 
     token = ""
-    ctoken = ""
+    ctoken = "none"
     if response.cookies:
-        cookie_jar = RequestsCookieJar()
-        cookie_jar.set("BAIDUID", "B1CCDD4B4BC886BF99364C72C8AE1C01:FG=1", domain="baidu.com")
         for key, value in response.cookies.items():
             if key == 'XSRF-TOKEN':
                 token += ("XSRF-TOKEN=" + value + ";")
@@ -112,7 +96,6 @@ def get_csrf_token():
 
     soup = bs4.BeautifulSoup(response.text, "html.parser")
     soup.title.string[3:7]
-    ctoken = "none"
     for meta in soup.select('meta'):
         if meta.get('name') == 'csrf-token':
             print(meta.get('content'))
@@ -121,28 +104,24 @@ def get_csrf_token():
 
 
 def ajaxRequest():
+    token = get_csrf_token()
     headers = {
-        "X-CSRF-TOKEN": get_csrf_token()[0],
+        "X-CSRF-TOKEN": token[0],
         "Accept": "application/json, text/javascript, */*; q=0.01",
-        "Cookie": get_csrf_token()[1],
+        "Cookie": token[1],
         "Content-Type": "application/json; charset=UTF-8"
     }
-    datas = {'email': '2670617835@qq.com', 'password': 'g2670617835', 'remember': 'true'}
+    datas = {'email': '2670617835@qq.com', 'password': 'g267061783a5', 'remember': 'true'}
     url = "https://www.yunpanjingling.com/user/login"
     response = session.post(url=url, data=json.dumps(datas), headers=headers)
+    response.encoding = "utf-8"
     if response.status_code == 200:
-        print("返回码：" + str(response.status_code))
+        print("返回码：" + str(response.content))
     else:
-        print("返回码：" + str(response.status_code))
+        print("返回码：" + str(response.content))
     session.cookies.save()
     cookie = session.cookies
     print(cookie)
 
 
 ajaxRequest()
-# test = get_csrf_token()
-# print(test[0])
-# print(test[1])
-# get_xsrf_token()
-
-# get_csrf_token()
