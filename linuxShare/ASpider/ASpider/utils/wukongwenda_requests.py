@@ -111,7 +111,7 @@ def ajaxRequest():
         "Cookie": token[1],
         "Content-Type": "application/json; charset=UTF-8"
     }
-    datas = {'email': '2670617835@qq.com', 'password': 'g267061783a5', 'remember': 'true'}
+    datas = {'email': '2670617835@qq.com', 'password': 'g2670617835', 'remember': 'true'}
     url = "https://www.yunpanjingling.com/user/login"
     response = session.post(url=url, data=json.dumps(datas), headers=headers)
     response.encoding = "utf-8"
