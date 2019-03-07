@@ -35,10 +35,10 @@ class YunPan(scrapy.Spider):
         print(post_nodes)
 
     def start_requests(self):
-        return [scrapy.Request('https://www.yunpanjingling.com/user/login', headers=header, callback=self.login)]
+        return [scrapy.Request('https://www.yunpanjingling.com/user/login', headers=header, callback=self.login,dont_filter=True)]
 
     def login(self,response):
-        response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
+        # response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
         token = ""
         ctoken = "none"
         if response.cookies:
