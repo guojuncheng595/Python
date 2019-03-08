@@ -6,7 +6,7 @@ try:
     import cookielib
 except:
     import http.cookiejar as cookielib
-# import re
+import re
 # import sys
 session = requests.session()
 session.cookies = cookielib.LWPCookieJar(filename='cookies.txt')
@@ -35,9 +35,11 @@ class YunPan(scrapy.Spider):
         print(post_nodes)
 
     def start_requests(self):
-        return [scrapy.Request('https://www.yunpanjingling.com/user/login', headers=header, callback=self.login,dont_filter=True)]
+        return [scrapy.Request('https://www.yunpanjingling.com/user/login', meta={"cookiejar": 1}, headers=header, callback=self.login)]
 
-    def login(self,response):
+
+    def login(self, response):
+        meta = {"cookiejar": response.meta["cookiejar"]}
         # response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
         token = ""
         ctoken = "none"
