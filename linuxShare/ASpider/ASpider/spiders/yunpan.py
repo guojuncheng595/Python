@@ -44,6 +44,14 @@ class YunPan(scrapy.Spider):
         return [scrapy.http.Request('https://www.yunpanjingling.com/user/login', meta={'cookiejar':1},headers=header, callback=self.login)]
 
     def login(self, response):
+        # 如果有图片验证码
+        # import time
+        # t = str(int(time.time()*1000))
+        # captcha_url = ""
+        # yield scrapy.Request(captcha_url, headers=self.headers, meta={"post_data":post_data},callback=self.login_after_captcha)
+        #
+
+
         # https://www.jianshu.com/p/404e4ac156a6
         cookies = response.headers.getlist('Set-Cookie')
         print("后台首次写入，相应的Cookies", cookies)
@@ -91,5 +99,34 @@ class YunPan(scrapy.Spider):
     def check_login(self, response):
         # 验证服务器的返回数据判断是否成功
         pass
+
+    # 图形验证码获取
+    def login_after_captcha(self,response):
+        with open("captcha.jpg","wb") as f:
+            f.write(response.body)
+            f.close()
+        from PIL import Image
+        try:
+            im = Image.open('captcha.jpg')
+            im.show()
+            im.close()
+        except:
+            pass
+        captcha = input("输入验证码\n>")
+        # 登陆URL
+        post_url = ""
+        # 登陆请求数据
+        post_data = response.meta.get("post_data",{})
+        post_data["captcha"] = captcha
+        # 验证服务器返回的数据是否成功
+        text_json = json.load(response.txt)
+        if "msg" in text_json and text_json["msg"] == "登陆成功":
+            for url in self.start_urls:
+                yield scrapy.Request(url,dont_filter=True)
+
+
+
+
+
 
 
