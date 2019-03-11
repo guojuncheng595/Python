@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-import scrapy
+import scrapy.http.request
 import bs4
 import requests
+import json
+
+from requests import Request
+from scrapy.http.cookies import CookieJar    # 该模块继承自内置的http.cookiejar,操作类似
+# 实例化一个cookiejar对象
+cookie_jar = CookieJar()
 try:
     import cookielib
 except:
@@ -35,25 +41,22 @@ class YunPan(scrapy.Spider):
         print(post_nodes)
 
     def start_requests(self):
-        return [scrapy.Request('https://www.yunpanjingling.com/user/login', meta={"cookiejar": 1}, headers=header, callback=self.login)]
-
+        return [scrapy.http.Request('https://www.yunpanjingling.com/user/login', meta={'cookiejar':1},headers=header, callback=self.login)]
 
     def login(self, response):
-        meta = {"cookiejar": response.meta["cookiejar"]}
-        # response = requests.get("https://www.yunpanjingling.com/user/login", headers=header)
-        token = ""
-        ctoken = "none"
-        if response.cookies:
-            for key, value in response.cookies.items():
-                if key == 'XSRF-TOKEN':
-                    token += ("XSRF-TOKEN=" + value + ";")
-                elif key == '_session':
-                    token += ("_session=" + value + ";")
-            print(token[:-1])
-            token = token[:-1]
-        else:
-            token = 'none'
+        # https://www.jianshu.com/p/404e4ac156a6
+        cookies = response.headers.getlist('Set-Cookie')
+        print("后台首次写入，相应的Cookies", cookies)
+        str_cookies = ""
+        for cookie in cookies:
+            # https://www.cnblogs.com/timelesszhuang/p/7235798.html
+            str_cookie = re.findall(r"(.*?) expires", str(cookie, encoding="utf-8"))
+            str_cookies += str_cookies.join(str_cookie)
+            print("序号：%s 值：%s"%(cookie.index(cookie)+1, str_cookie))
+        print("合成后的cookie的值为：", str_cookies[:-1])
 
+        # 获取x-csrf-token值
+        ctoken = "none"
         soup = bs4.BeautifulSoup(response.text, "html.parser")
         soup.title.string[3:7]
         for meta in soup.select('meta'):
@@ -61,11 +64,11 @@ class YunPan(scrapy.Spider):
                 print(meta.get('content'))
                 ctoken = meta.get('content')
         # return [ctoken, token]
-        if ctoken and token:
+        if ctoken and str_cookies:
             headers = {
                 "X-CSRF-TOKEN": ctoken,
                 "Accept": "application/json, text/javascript, */*; q=0.01",
-                "Cookie": token,
+                "Cookie": str_cookies,
                 "Content-Type": "application/json; charset=UTF-8"
             }
             post_data = {
@@ -74,13 +77,16 @@ class YunPan(scrapy.Spider):
                 'remember': 'true'
             }
             post_url = "https://www.yunpanjingling.com/user/login"
+            response = session.post(url=post_url, data=json.dumps(post_data), headers=headers)
+            if response.status_code == 200:
+                print("返回码：" + str(response.status_code))
+                print("返回码：" + str(response.text.encode("utf-8")))
+                self.check_login(response)
+            else:
+                test = str(response.text.encode("utf-8"))
+                print("返回码：" + test)
+            session.cookies.save()
 
-            return [scrapy.FormRequest(
-                url=post_url,
-                formdata=post_data,
-                headers=headers,
-                callback=self.check_login
-            )]
 
     def check_login(self, response):
         # 验证服务器的返回数据判断是否成功
