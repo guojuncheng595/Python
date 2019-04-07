@@ -41,7 +41,7 @@ class YunPan(scrapy.Spider):
         print(post_nodes)
 
     def start_requests(self):
-        return [scrapy.http.Request('https://www.yunpanjingling.com/user/login', meta={'cookiejar':1},headers=header, callback=self.login)]
+        return [scrapy.http.Request('https://www.yunpanjingling.com/user/login', meta={'cookiejar': 1}, headers=header, callback=self.login)]
 
     def login(self, response):
         # 如果有图片验证码
